@@ -18,7 +18,7 @@ h1 {
   &__input {
     display: flex;
     width: 80%;
-    min-width: 700px;
+    max-width: 700px;
     min-width: 400px;
     margin: 0 auto 10px;
     > * {

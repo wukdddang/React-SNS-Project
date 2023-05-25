@@ -17,6 +17,7 @@ const originalMsgs = Array(50)
 
 function MsgList() {
   const [msgs, setMsgs] = useState(originalMsgs);
+  const [editingId, setEditingId] = useState(null);
   const onCreate = (text) => {
     const newMsg = {
       id: msgs.length + 1,
@@ -28,6 +29,7 @@ function MsgList() {
   };
 
   const onUpdate = (text, id) => {
+    // setState를 함수형으로 사용하는 것을 추천(한다고 함)
     setMsgs((msgs) => {
       const targetIndex = msgs.findIndex((msg) => msg.id === id);
       if (targetIndex < 0) return msgs;
@@ -38,13 +40,35 @@ function MsgList() {
       });
       return newMsgs;
     });
+    doneEdit();
   };
+
+  const onDelete = (id) => {
+    setMsgs((msgs) => {
+      const targetIndex = msgs.findIndex((msg) => msg.id === id);
+      if (targetIndex < 0) return msgs;
+      const newMsgs = [...msgs];
+      newMsgs.splice(targetIndex, 1);
+      return newMsgs;
+    });
+  };
+
+  // EDIT 완료되면 알려주는 메서드
+  const doneEdit = () => setEditingId(null);
+
   return (
     <>
       <MsgInput mutate={onCreate} />
       <ul className="messages">
         {msgs.map((msg) => (
-          <MsgItem key={msg.id} {...msg} onUpdate={onUpdate} />
+          <MsgItem
+            key={msg.id}
+            {...msg}
+            onUpdate={onUpdate}
+            onDelete={() => onDelete(msg.id)}
+            startEdit={() => setEditingId(msg.id)}
+            isEditing={editingId === msg.id}
+          />
         ))}
       </ul>
     </>

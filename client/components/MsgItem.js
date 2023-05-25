@@ -1,6 +1,15 @@
 import MsgInput from "./MsgInput";
 
-function MsgItem({ id, userId, timestamp, text, onUpdate, isEditing }) {
+function MsgItem({
+  id,
+  userId,
+  timestamp,
+  text,
+  onUpdate,
+  onDelete,
+  isEditing,
+  startEdit,
+}) {
   return (
     <li className="messages__item">
       <h3>
@@ -18,11 +27,16 @@ function MsgItem({ id, userId, timestamp, text, onUpdate, isEditing }) {
       </h3>
       {isEditing ? (
         <>
-          <MsgInput mutate={onUpdate} id={id} />
+          <MsgInput text={text} mutate={onUpdate} id={id} />
         </>
       ) : (
         text
       )}
+
+      <div className="messages__buttons">
+        <button onClick={startEdit}>수정</button>
+        <button onClick={onDelete}>삭제</button>
+      </div>
     </li>
   );
 }

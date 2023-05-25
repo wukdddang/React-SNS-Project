@@ -1,7 +1,8 @@
 import React from "react";
 import MsgItem from "./MsgItem";
 import MsgInput from "./MsgInput";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import fetcher from "../fetcher";
 
 const userIds = ["roy", "jay"];
 const getRandomUserId = () => userIds[Math.round(Math.random())];
@@ -56,6 +57,15 @@ function MsgList() {
   // EDIT 완료되면 알려주는 메서드
   const doneEdit = () => setEditingId(null);
 
+  const getMessages = async () => {
+    const msgs = await fetcher("get", "/messages");
+    setMsgs(msgs);
+  };
+  // useEffect 내부에서는 async await를 직접 호출하지 않게끔 한다
+  // 외부에서 선언한 비동기 함수를 실행
+  useEffect(() => {
+    getMessages();
+  }, []);
   return (
     <>
       <MsgInput mutate={onCreate} />

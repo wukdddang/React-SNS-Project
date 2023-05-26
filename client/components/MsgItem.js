@@ -9,6 +9,7 @@ function MsgItem({
   onDelete,
   isEditing,
   startEdit,
+  myId,
 }) {
   return (
     <li className="messages__item">
@@ -33,10 +34,12 @@ function MsgItem({
         text
       )}
 
-      <div className="messages__buttons">
-        <button onClick={startEdit}>수정</button>
-        <button onClick={onDelete}>삭제</button>
-      </div>
+      {myId === userId && (
+        <div className="messages__buttons">
+          <button onClick={startEdit}>수정</button>
+          <button onClick={onDelete}>삭제</button>
+        </div>
+      )}
     </li>
   );
 }

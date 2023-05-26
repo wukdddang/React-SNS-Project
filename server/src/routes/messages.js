@@ -33,7 +33,7 @@ const messagesRoute = [
     // 메시지 생성
     method: "post",
     route: "/messages",
-    handler: ({ body, params, query }, res) => {
+    handler: ({ body }, res) => {
       const msgs = getMsgs();
       const newMsg = {
         id: v4(),
@@ -53,10 +53,11 @@ const messagesRoute = [
     handler: ({ body, params: { id } }, res) => {
       try {
         const msgs = getMsgs();
-        const targetIndex = msgs.findIndex((msg) => msg.id === id);
+        const targetIndex = msgs.findIndex((msg) => msg.id === Number(id));
         if (targetIndex < 0) throw "메시지가 없습니다.";
         if (msgs[targetIndex].userId !== body.userId)
           throw "사용자가 다릅니다.";
+
         const newMsg = { ...msgs[targetIndex], text: body.text };
         msgs.splice(targetIndex, 1, newMsg);
         setMsgs(msgs);
@@ -70,13 +71,14 @@ const messagesRoute = [
     // 메시지 삭제
     method: "delete",
     route: "/messages/:id",
-    handler: ({ body, params: { id } }, res) => {
+    // client에서 params라고 보내는 값은 query로 받게 된다.
+    // 이 부분이 헷갈림. 명칭이 달라서.
+    handler: ({ params: { id }, query: { userId } }, res) => {
       try {
         const msgs = getMsgs();
-        const targetIndex = msgs.findIndex((msg) => msg.id === id);
+        const targetIndex = msgs.findIndex((msg) => msg.id === Number(id));
         if (targetIndex < 0) throw "메시지가 없습니다.";
-        if (msgs[targetIndex].userId !== body.userId)
-          throw "사용자가 다릅니다.";
+        if (msgs[targetIndex].userId !== userId) throw "사용자가 다릅니다.";
 
         msgs.splice(targetIndex, 1);
         setMsgs(msgs);

@@ -2,8 +2,9 @@ import React from "react";
 import MsgItem from "./MsgItem";
 import MsgInput from "./MsgInput";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import fetcher from "../fetcher";
+import useInfiniteScroll from "../hooks/useInfiniteScroll";
 
 const userIds = ["roy", "jay"];
 // const getRandomUserId = () => userIds[Math.round(Math.random())];
@@ -13,6 +14,9 @@ function MsgList() {
   } = useRouter();
   const [msgs, setMsgs] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [hasNext, setHasNext] = useState(true);
+  const fetchMoreEl = useRef(null);
+  const intersecting = useInfiniteScroll(fetchMoreEl);
 
   const onCreate = async (text) => {
     const newMsg = await fetcher("post", "/messages", { text, userId });
@@ -55,14 +59,29 @@ function MsgList() {
   const doneEdit = () => setEditingId(null);
   // 메시지들을 가져오는 함수
   const getMessages = async () => {
-    const msgs = await fetcher("get", "/messages");
-    setMsgs(msgs);
+    const newMsgs = await fetcher("get", "/messages", {
+      // 커서값이 마지막 데이터의 id를 가리켜줌
+      // 최초에는 값이 없기 때문에 ?. ||를 사용
+      params: { cursor: msgs[msgs.length - 1]?.id || "" },
+    });
+    if (newMsgs.length === 0) {
+      setHasNext(false);
+      return;
+    }
+    setMsgs((msgs) => [...msgs, ...newMsgs]);
   };
   // useEffect 내부에서는 async await를 직접 호출하지 않게끔 한다
   // 따라서 외부에서 선언한 비동기 함수를 실행
+
+  // 맨 처음에는 데이터가 없다.
+  // 그래서 intersecting이 무조건 true라서 message가 두번 요청된다.
+  // useEffect(() => {
+  //   getMessages();
+  // }, []);
+
   useEffect(() => {
-    getMessages();
-  }, []);
+    if (intersecting && hasNext) getMessages();
+  }, [intersecting]);
   return (
     <>
       <MsgInput mutate={onCreate} />
@@ -79,6 +98,7 @@ function MsgList() {
           />
         ))}
       </ul>
+      <div ref={fetchMoreEl} style={{ width: "100%", height: "30px" }}></div>
     </>
   );
 }

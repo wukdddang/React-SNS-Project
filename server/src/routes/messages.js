@@ -8,9 +8,12 @@ const messagesRoute = [
     // 전체 메시지 가져오기
     method: "get",
     route: "/messages",
-    handler: (req, res) => {
+    handler: ({ query: { cursor = "" } }, res) => {
       const msgs = getMsgs();
-      res.send(msgs);
+      // 맨 처음엔 ''가 들어오기 때문에 -1을 반환하고 이를 +1 하면 0이 된다.
+      // 그렇지 않다면 가져온 msg부터 다음 번째를 가져오는 것
+      const fromIndex = msgs.findIndex((msg) => msg.id === cursor) + 1;
+      res.send(msgs.slice(fromIndex, fromIndex + 15)); // 15개만 가져온다.
     },
   },
   {
@@ -20,7 +23,7 @@ const messagesRoute = [
     handler: ({ params: { id } }, res) => {
       try {
         const msgs = getMsgs();
-        const msg = msgs.find((m) => m.id === Number(id));
+        const msg = msgs.find((m) => m.id === id);
         if (!msg) throw Error("메시지가 없습니다.");
         res.send(msg);
       } catch (err) {
@@ -53,7 +56,7 @@ const messagesRoute = [
     handler: ({ body, params: { id } }, res) => {
       try {
         const msgs = getMsgs();
-        const targetIndex = msgs.findIndex((msg) => msg.id === Number(id));
+        const targetIndex = msgs.findIndex((msg) => msg.id === id);
         if (targetIndex < 0) throw "메시지가 없습니다.";
         if (msgs[targetIndex].userId !== body.userId)
           throw "사용자가 다릅니다.";
@@ -76,7 +79,7 @@ const messagesRoute = [
     handler: ({ params: { id }, query: { userId } }, res) => {
       try {
         const msgs = getMsgs();
-        const targetIndex = msgs.findIndex((msg) => msg.id === Number(id));
+        const targetIndex = msgs.findIndex((msg) => msg.id === id);
         if (targetIndex < 0) throw "메시지가 없습니다.";
         if (msgs[targetIndex].userId !== userId) throw "사용자가 다릅니다.";
 
